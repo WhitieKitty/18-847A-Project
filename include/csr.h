@@ -1,0 +1,32 @@
+#ifndef CSR_H
+#define CSR_H
+#include <vector>
+#include <string> 
+#include <fstream>
+#include <iostream>
+#include "base_matrix.h"
+
+class CSR : public BaseMatrix {
+    public:
+        CSR(const std::string& filename);
+        CSR(const std::vector<int>& row_ptr, const std::vector<int>& col_idx, const std::vector<double>& values, int m, int n);
+        ~CSR();
+        void print() const;
+        void show_matrix() const;
+        BaseMatrix* multiply(const BaseMatrix& other) const;
+        BaseMatrix* add(const BaseMatrix& other) const;
+        BaseMatrix* subtract(const BaseMatrix& other) const;
+        BaseMatrix* transpose() const;
+        int getRows() const;
+        int getCols() const;
+        void set(int i, int j, double value);
+        double get(int i, int j) const;
+    private:
+        std::vector<int> row_ptr;
+        std::vector<int> col_idx;
+        std::vector<double> values;
+        int m; // number of rows
+        int n; // number of columns
+};
+
+#endif
