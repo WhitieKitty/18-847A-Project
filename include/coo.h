@@ -15,6 +15,7 @@ class COO : public BaseMatrix {
         void print() const;
         void show_matrix() const;
         BaseMatrix* multiply(const BaseMatrix& other) const;
+        std::vector<double> multiply(const std::vector<double>& other) const;
         BaseMatrix* add(const BaseMatrix& other) const;
         BaseMatrix* subtract(const BaseMatrix& other) const;
         BaseMatrix* transpose() const;

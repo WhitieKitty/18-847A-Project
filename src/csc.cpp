@@ -176,6 +176,20 @@ int CSC::getCols() const {
     return n;
 }
 
+std::vector<double> CSC::multiply(const std::vector<double>& other) const {
+    if ((int)other.size() != n) {
+        throw std::invalid_argument("Vector dimension does not match matrix columns");
+    }
+
+    std::vector<double> result(m, 0.0);
+    for (int j = 0; j < n; j++) {
+        for (int k = col_ptr[j]; k < col_ptr[j + 1]; k++) {
+            result[row_idx[k]] += values[k] * other[j];
+        }
+    }
+    return result;
+}
+
 void CSC::set(int i, int j, double value) {
     if (i < 0 || i >= m || j < 0 || j >= n) {
         throw std::out_of_range("Matrix indices out of bounds");

@@ -233,6 +233,18 @@ int COO::getCols() const {
     return n;
 }
 
+std::vector<double> COO::multiply(const std::vector<double>& other) const {
+    if ((int)other.size() != n) {
+        throw std::invalid_argument("Vector dimension does not match matrix columns");
+    }
+
+    std::vector<double> result(m, 0.0);
+    for (size_t i = 0; i < values.size(); i++) {
+        result[row_idx[i]] += values[i] * other[col_idx[i]];
+    }
+    return result;
+}
+
 void COO::set(int i, int j, double value) {
     if (i < 0 || i >= m || j < 0 || j >= n) {
         throw std::out_of_range("Matrix indices out of bounds");

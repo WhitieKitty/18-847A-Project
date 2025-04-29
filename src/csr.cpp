@@ -85,6 +85,21 @@ BaseMatrix* CSR::multiply(const BaseMatrix& other) const {
     return new CSR(new_row_ptr, new_col_idx, new_values, m, result->n);
 }
 
+std::vector<double> CSR::multiply(const std::vector<double>& other) const {
+    if ((int)other.size() != n) {
+        throw std::invalid_argument("Vector dimension does not match matrix columns");
+    }
+
+    std::vector<double> result(m, 0.0);
+    for (int i = 0; i < m; i++) {
+        for (int k = row_ptr[i]; k < row_ptr[i + 1]; k++) {
+            result[i] += values[k] * other[col_idx[k]];
+        }
+    }
+    return result;
+}
+
+
 BaseMatrix* CSR::add(const BaseMatrix& other) const {
     const CSR* result = dynamic_cast<const CSR*>(&other);
     if (result == nullptr) {

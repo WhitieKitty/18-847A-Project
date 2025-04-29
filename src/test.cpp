@@ -39,7 +39,7 @@ int main() {
     // ----------------------
     // Part 2: Generate a symmetric positive definite (SPD) matrix
     // ----------------------
-    int matrix_size = 5000; 
+    int matrix_size = 500; 
     BaseMatrix* matrix = mg.generate_spd_matrix(matrix_size);
 
     std::cout << "\n[Generated SPD Matrix for EigenSolver Testing]" << std::endl;

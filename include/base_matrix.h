@@ -16,6 +16,7 @@ class BaseMatrix {
         virtual int getRows() const = 0;
         virtual int getCols() const = 0;
         virtual BaseMatrix* multiply(const BaseMatrix& other) const = 0;
+        virtual std::vector<double> multiply(const std::vector<double>& other) const = 0;
         virtual BaseMatrix* add(const BaseMatrix& other) const = 0;
         virtual BaseMatrix* subtract(const BaseMatrix& other) const = 0;
         virtual BaseMatrix* transpose() const = 0;
