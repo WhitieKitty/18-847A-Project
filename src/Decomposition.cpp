@@ -96,4 +96,23 @@ void Decomposition::QR(const BaseMatrix& A, BaseMatrix& Q, BaseMatrix& R) {
             Q.set(i, j, q_vectors[j][i]);
 }
 
-void Decomposition::Cholesky(const BaseMatrix& A, BaseMatrix& L) { }
+void Decomposition::Cholesky(const BaseMatrix& A, BaseMatrix& L) {
+    int n = A.getRows();
+    assert(A.getCols() == n); // A must be square
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j <= i; ++j) {
+            double sum = 0.0;
+            for (int k = 0; k < j; ++k) {
+                sum += L.get(i, k) * L.get(j, k);
+            }
+            if (i == j) {
+                double value = A.get(i, i) - sum;
+                assert(value > 0); // A must be positive definite
+                L.set(i, j, std::sqrt(value));
+            } else {
+                L.set(i, j, (A.get(i, j) - sum) / L.get(j, j));
+            }
+        }
+    }
+}
