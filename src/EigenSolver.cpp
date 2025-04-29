@@ -22,6 +22,50 @@ std::vector<double> sparse_matvec_product(const BaseMatrix& A, const std::vector
     return result;
 }
 
+std::vector<double> EigenSolver::denseQR(const BaseMatrix& A, int max_iters, double tol) {
+    int n = A.getRows();
+    assert(A.getRows() == A.getCols() && "Matrix must be square.");
+
+    std::vector<int> row_idx, col_idx;
+    std::vector<double> values;
+    for (int i = 0; i < A.getRows(); ++i) {
+        for (int j = 0; j < A.getCols(); ++j) {
+            double val = A.get(i, j);
+            if (std::abs(val) > 1e-12) { // 非零元素
+                row_idx.push_back(i);
+                col_idx.push_back(j);
+                values.push_back(val);
+            }
+        }
+    }
+    COO current(row_idx, col_idx, values, A.getRows(), A.getCols());
+    
+    COO Qmat({}, {}, {}, n, n);
+    COO Rmat({}, {}, {}, n, n);
+
+    for (int iter = 0; iter < max_iters; ++iter) {
+        Decomposition::QR(current, Qmat, Rmat);
+        COO new_current({}, {}, {}, n, n);
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < n; ++j)
+                for (int l = 0; l < n; ++l)
+                    new_current.set(i, j, new_current.get(i, j) + Rmat.get(i, l) * Qmat.get(l, j));
+        current = new_current;
+
+        double off_diag_norm = 0.0;
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < n; ++j)
+                if (i != j) off_diag_norm += current.get(i, j) * current.get(i, j);
+        if (std::sqrt(off_diag_norm) < tol) break;
+    }
+
+    std::vector<double> eigenvalues(n);
+    for (int i = 0; i < n; ++i)
+        eigenvalues[i] = current.get(i, i);
+    return eigenvalues;
+}
+
+
 std::pair<double, std::vector<double>> EigenSolver::powerIteration(const BaseMatrix& A, int maxIters, double tol) {
     assert(A.getRows() == A.getCols());
     int n = A.getRows();

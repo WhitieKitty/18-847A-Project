@@ -20,6 +20,9 @@ public:
 
     // Arnoldi Iteration for general matrices
     static std::vector<double> arnoldi(const BaseMatrix& A, int k, BaseMatrix& H, BaseMatrix& Q);
+    
+    // Dense QR Iteration for eigenvalues
+    static std::vector<double> denseQR(const BaseMatrix& A, int max_iters = 100, double tol = 1e-10);
 
 };
 
