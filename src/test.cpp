@@ -39,7 +39,7 @@ int main() {
     // ----------------------
     // Part 2: Generate a symmetric positive definite (SPD) matrix
     // ----------------------
-    int matrix_size = 30; 
+    int matrix_size = 5000; 
     BaseMatrix* matrix = mg.generate_spd_matrix(matrix_size);
 
     std::cout << "\n[Generated SPD Matrix for EigenSolver Testing]" << std::endl;
@@ -70,6 +70,28 @@ int main() {
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
               << " ms" << std::endl;
 
+
+    // ----------------------
+    // Test Dense QR Iteration
+    // ----------------------
+    std::cout << "\n[Testing Dense QR Iteration]" << std::endl;
+    start = std::chrono::high_resolution_clock::now();
+    std::vector<double> dense_eigenvalues = EigenSolver::denseQR(*matrix, matrix_size, 50);
+    end = std::chrono::high_resolution_clock::now();
+    std::cout << "[Dense QR finished]" << std::endl;
+    std::cout << "Time taken: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+            << " ms" << std::endl;
+
+    std::cout << "[Dense QR eigenvalues (first 10)]" << std::endl;
+    int print_count = std::min(10, (int)dense_eigenvalues.size());
+    for (int i = 0; i < print_count; ++i) {
+        std::cout << dense_eigenvalues[i] << " ";
+    }
+    std::cout << std::endl;
+
+
+
     // ----------------------
     // Test Lanczos Iteration
     // ----------------------
@@ -89,7 +111,7 @@ int main() {
 
 
     std::cout << "[Lanczos eigenvalues (first 10)]" << std::endl;
-    int print_count = std::min(10, (int)lanczos_eigenvalues.size());
+    print_count = std::min(10, (int)lanczos_eigenvalues.size());
     for (int i = 0; i < print_count; ++i) {
         std::cout << lanczos_eigenvalues[i] << " ";
     }
