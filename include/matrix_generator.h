@@ -14,7 +14,9 @@ class MatrixGenerator {
         MatrixGenerator();
         ~MatrixGenerator();
         BaseMatrix* generate_matrix(const std::string& format, int m, int n, int density);
-    private:
+        BaseMatrix* generate_spd_matrix(int n);
+
+        private:
 };
 
 #endif
