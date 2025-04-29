@@ -31,7 +31,7 @@ std::vector<double> EigenSolver::denseQR(const BaseMatrix& A, int max_iters, dou
     for (int i = 0; i < A.getRows(); ++i) {
         for (int j = 0; j < A.getCols(); ++j) {
             double val = A.get(i, j);
-            if (std::abs(val) > 1e-12) { // 非零元素
+            if (std::abs(val) > 1e-12) {
                 row_idx.push_back(i);
                 col_idx.push_back(j);
                 values.push_back(val);
