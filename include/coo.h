@@ -7,6 +7,12 @@
 #include <iostream>
 #include "base_matrix.h"
 
+/**
+ * @class COO
+ * @brief Class representing a sparse matrix in Coordinate List (COO) format.
+ * 
+ * COO format stores a sparse matrix as three arrays: row indices, column indices, and values.
+ */
 class COO : public BaseMatrix {
     public:
         COO(const std::string& filename);

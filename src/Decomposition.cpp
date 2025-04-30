@@ -2,10 +2,6 @@
 #include <cassert>
 #include <cmath>
 
-// LU Decomposition
-// This function decomposes a matrix A into L and U such that A = L * U
-// L is a lower triangular matrix and U is an upper triangular matrix.
-// The function assumes that A is a square matrix and that it is invertible.
 void Decomposition::LU(const BaseMatrix& A, BaseMatrix& L, BaseMatrix& U) {
     int n = A.getRows();
     assert(A.getRows() == A.getCols()); // A must be square
@@ -48,12 +44,6 @@ void Decomposition::LU(const BaseMatrix& A, BaseMatrix& L, BaseMatrix& U) {
     }
 }
 
-// This function solves the system of equations Ax = b using the LU decomposition
-// where A = L * U. It first solves Ly = b for y using forward substitution
-// and then solves Ux = y for x using backward substitution.
-// The function assumes that L and U are the result of a LU decomposition of A
-// and that b is a vector of the same size as A's rows.
-// The function returns the solution vector x.
 std::vector<double> Decomposition::solveLU(const BaseMatrix& L, const BaseMatrix& U, const std::vector<double>& b) {
     int n = L.getRows();
     assert(L.getRows() == L.getCols());
@@ -84,9 +74,6 @@ std::vector<double> Decomposition::solveLU(const BaseMatrix& L, const BaseMatrix
     return x;
 }
 
-// QR Decomposition using Gram-Schmidt Process
-// This function decomposes a square matrix A into an orthogonal matrix Q
-// and an upper triangular matrix R such that A = Q * R.
 void Decomposition::QR(const BaseMatrix& A, BaseMatrix& Q, BaseMatrix& R) {
     int n = A.getRows();
     assert(A.getCols() == n);
@@ -133,11 +120,6 @@ void Decomposition::QR(const BaseMatrix& A, BaseMatrix& Q, BaseMatrix& R) {
     }
 }
 
-// Cholesky Decomposition
-// This function decomposes a symmetric positive definite matrix A into
-// a lower triangular matrix L such that A = L * L^T.
-// The function assumes that A is a square matrix and that it is symmetric positive definite.
-// The function returns the lower triangular matrix L.
 void Decomposition::Cholesky(const BaseMatrix& A, BaseMatrix& L) {
     int n = A.getRows();
     assert(A.getCols() == n); // A must be square

@@ -42,7 +42,7 @@ int main() {
     int matrix_size = 50; 
     int max_iter = 50;
     int num_eigenvalues=10;
-    BaseMatrix* matrix = mg.generate_spd_matrix(matrix_size);
+    BaseMatrix* matrix = mg.generate_spd_matrix("COO", matrix_size);
 
     std::cout << "\n[Generated SPD Matrix for EigenSolver Testing]" << std::endl;
     //matrix->print();
@@ -155,7 +155,7 @@ int main() {
     // ----------------------
     std::cout << "\n[Generated Random Sparse Matrix in COO Format for LU Decomposition]" << std::endl;
     matrix_size = 10;
-    BaseMatrix* lu_matrix = mg.generate_spd_matrix(matrix_size);
+    BaseMatrix* lu_matrix = mg.generate_spd_matrix("COO", matrix_size);
     lu_matrix->print();
 
     BaseMatrix* L = mg.generate_matrix("COO", matrix_size, matrix_size, 0);  // empty matrix for L
@@ -192,11 +192,11 @@ int main() {
     // Test QR Decomposition
     // ----------------------
     std::cout << "\n[Generated Random Sparse Matrix in CSR Format for QR Decomposition]" << std::endl;
-    BaseMatrix* qr_matrix = mg.generate_spd_matrix(matrix_size);
+    BaseMatrix* qr_matrix = mg.generate_spd_matrix("CSR", matrix_size);
     qr_matrix->print();
 
-    BaseMatrix* Q_mat = mg.generate_matrix("COO", matrix_size, matrix_size, 0);  // empty matrix for Q
-    BaseMatrix* R = mg.generate_matrix("COO", matrix_size, matrix_size, 0);  // empty matrix for R
+    BaseMatrix* Q_mat = mg.generate_matrix("CSR", matrix_size, matrix_size, 0);  // empty matrix for Q
+    BaseMatrix* R = mg.generate_matrix("CSR", matrix_size, matrix_size, 0);  // empty matrix for R
 
     start = std::chrono::high_resolution_clock::now();
     Decomposition::QR(*qr_matrix, *Q_mat, *R);
@@ -225,10 +225,10 @@ int main() {
     // Test Cholesky Decomposition
     // ----------------------
     std::cout << "\n[Generated Random Sparse Matrix in CSC Format for Cholesky Decomposition]" << std::endl;
-    BaseMatrix* cholesky_matrix = mg.generate_spd_matrix(matrix_size);
+    BaseMatrix* cholesky_matrix = mg.generate_spd_matrix("CSC", matrix_size);
     cholesky_matrix->print();
 
-    BaseMatrix* chol_L = mg.generate_matrix("COO", matrix_size, matrix_size, 0);  // empty matrix for L
+    BaseMatrix* chol_L = mg.generate_matrix("CSC", matrix_size, matrix_size, 0);  // empty matrix for L
 
     start = std::chrono::high_resolution_clock::now();
     Decomposition::Cholesky(*cholesky_matrix, *chol_L);
