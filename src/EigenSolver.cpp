@@ -6,64 +6,7 @@
 #include <cassert>
 #include <iostream>
 
-std::vector<double> sparse_matvec_product(const BaseMatrix& A, const std::vector<double>& x) {
-    int rows = A.getRows();
-    int cols = A.getCols();
-    assert((int)x.size() == cols && "Dimension mismatch in sparse_matvec_product.");
-    std::vector<double> result(rows, 0.0);
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
-            double aij = A.get(i, j);
-            if (std::abs(aij) > 1e-12) {
-                result[i] += aij * x[j];
-            }
-        }
-    }
-    return result;
-}
 
-std::vector<double> EigenSolver::denseQR(const BaseMatrix& A, int max_iters, double tol) {
-    int n = A.getRows();
-    assert(A.getRows() == A.getCols() && "Matrix must be square.");
-
-    std::vector<int> row_idx, col_idx;
-    std::vector<double> values;
-    for (int i = 0; i < A.getRows(); ++i) {
-        for (int j = 0; j < A.getCols(); ++j) {
-            double val = A.get(i, j);
-            if (std::abs(val) > 1e-12) {
-                row_idx.push_back(i);
-                col_idx.push_back(j);
-                values.push_back(val);
-            }
-        }
-    }
-    COO current(row_idx, col_idx, values, A.getRows(), A.getCols());
-    
-    COO Qmat({}, {}, {}, n, n);
-    COO Rmat({}, {}, {}, n, n);
-
-    for (int iter = 0; iter < max_iters; ++iter) {
-        Decomposition::QR(current, Qmat, Rmat);
-        COO new_current({}, {}, {}, n, n);
-        for (int i = 0; i < n; ++i)
-            for (int j = 0; j < n; ++j)
-                for (int l = 0; l < n; ++l)
-                    new_current.set(i, j, new_current.get(i, j) + Rmat.get(i, l) * Qmat.get(l, j));
-        current = new_current;
-
-        double off_diag_norm = 0.0;
-        for (int i = 0; i < n; ++i)
-            for (int j = 0; j < n; ++j)
-                if (i != j) off_diag_norm += current.get(i, j) * current.get(i, j);
-        if (std::sqrt(off_diag_norm) < tol) break;
-    }
-
-    std::vector<double> eigenvalues(n);
-    for (int i = 0; i < n; ++i)
-        eigenvalues[i] = current.get(i, i);
-    return eigenvalues;
-}
 
 
 std::pair<double, std::vector<double>> EigenSolver::powerIteration(const BaseMatrix& A, int maxIters, double tol) {
@@ -74,18 +17,21 @@ std::pair<double, std::vector<double>> EigenSolver::powerIteration(const BaseMat
     std::uniform_real_distribution<> dis(0.0, 1.0);
     for (int i = 0; i < n; ++i) b_k[i] = dis(gen);
     for (int iter = 0; iter < maxIters; ++iter) {
-        std::vector<double> Ab = sparse_matvec_product(A, b_k);
-        double norm = 0.0;
-        for (double val : Ab) norm += val * val;
-        norm = std::sqrt(norm);
+        std::vector<double> Ab = A.multiply(b_k);
+        double norm = std::sqrt(std::inner_product(Ab.begin(), Ab.end(), Ab.begin(), 0.0));
+
         for (int i = 0; i < n; ++i) Ab[i] /= norm;
         double diff = 0.0;
         for (int i = 0; i < n; ++i) diff += (Ab[i] - b_k[i]) * (Ab[i] - b_k[i]);
         diff = std::sqrt(diff);
-        if (diff < tol) break;
+        if (diff < tol)
+        {
+            std::cout << "Finish iteration in iter "<< iter<< std::endl;
+            break;
+        }
         b_k = Ab;
     }
-    std::vector<double> Ab = sparse_matvec_product(A, b_k);
+    std::vector<double> Ab = A.multiply(b_k);
     double numerator = 0.0, denominator = 0.0;
     for (int i = 0; i < n; ++i) {
         numerator += b_k[i] * Ab[i];
@@ -107,17 +53,21 @@ std::pair<double, std::vector<double>> EigenSolver::inverseIteration(const BaseM
     Decomposition::LU(A, *L, *U);
     for (int iter = 0; iter < maxIters; ++iter) {
         std::vector<double> x = Decomposition::solveLU(*L, *U, b_k);
-        double norm = 0.0;
-        for (double val : x) norm += val * val;
-        norm = std::sqrt(norm);
+
+        double norm = std::sqrt(std::inner_product(x.begin(), x.end(), x.begin(), 0.0));
+
         for (int i = 0; i < n; ++i) x[i] /= norm;
         double diff = 0.0;
         for (int i = 0; i < n; ++i) diff += (x[i] - b_k[i]) * (x[i] - b_k[i]);
         diff = std::sqrt(diff);
-        if (diff < tol) break;
+        if (diff < tol) 
+        {
+            std::cout << "Finish iteration in iter "<< iter<< std::endl;
+            break;
+        }
         b_k = x;
     }
-    std::vector<double> Ab = sparse_matvec_product(A, b_k);
+    std::vector<double> Ab = A.multiply(b_k);
     double numerator = 0.0, denominator = 0.0;
     for (int i = 0; i < n; ++i) {
         numerator += b_k[i] * Ab[i];
@@ -129,7 +79,43 @@ std::pair<double, std::vector<double>> EigenSolver::inverseIteration(const BaseM
     return {eigenvalue, b_k};
 }
 
-std::vector<double> EigenSolver::lanczos(const BaseMatrix& A, int k, BaseMatrix& T, BaseMatrix& Q) {
+std::vector<double> EigenSolver::QRIteration(const BaseMatrix& A, int max_iters, double tol) {
+    int n = A.getRows();
+    assert(A.getRows() == A.getCols() && "Matrix must be square.");
+
+    COO current(A);
+    
+    COO Qmat({}, {}, {}, n, n);
+    COO Rmat({}, {}, {}, n, n);
+
+    for (int iter = 0; iter < max_iters; ++iter) {
+        Decomposition::QR(current, Qmat, Rmat);
+
+        // current=R@Q
+        BaseMatrix* mult = Rmat.multiply(Qmat);
+        COO* new_current = dynamic_cast<COO*>(mult);
+        assert(new_current != nullptr);
+        current = *new_current;
+        delete new_current;
+
+        double off_diag_norm = 0.0;
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < n; ++j)
+                if (i != j) off_diag_norm += current.get(i, j) * current.get(i, j);
+        if (std::sqrt(off_diag_norm) < tol)
+        {
+            std::cout << "Finish QR iteration in iter "<< iter<< std::endl;
+            break;
+        }
+    }
+
+    std::vector<double> eigenvalues(n);
+    for (int i = 0; i < n; ++i)
+        eigenvalues[i] = current.get(i, i);
+    return eigenvalues;
+}
+
+std::vector<double> EigenSolver::lanczos(const BaseMatrix& A, int k, BaseMatrix& T, BaseMatrix& Q, int max_iters) {
     int n = A.getRows();
     assert(A.getRows() == A.getCols());
 
@@ -141,128 +127,80 @@ std::vector<double> EigenSolver::lanczos(const BaseMatrix& A, int k, BaseMatrix&
 
     std::mt19937 gen(777);
     std::uniform_real_distribution<> dis(0.0, 1.0);
-
     for (int i = 0; i < n; ++i) q_new[i] = dis(gen);
-    double norm = 0.0;
-    for (double val : q_new) norm += val * val;
-    norm = std::sqrt(norm);
+    double norm = std::sqrt(std::inner_product(q_new.begin(), q_new.end(), q_new.begin(), 0.0));
     for (double& val : q_new) val /= norm;
 
+    int valid_k = 0;
     for (int j = 0; j < k; ++j) {
-        w = sparse_matvec_product(A, q_new);
-
+        w = A.multiply(q_new);
         if (j > 0) {
-            for (int i = 0; i < n; ++i) {
-                w[i] -= beta[j-1] * q_old[i];
-            }
+            for (int i = 0; i < n; ++i) w[i] -= beta[j - 1] * q_old[i];
         }
 
-        alpha[j] = 0.0;
-        for (int i = 0; i < n; ++i) {
-            alpha[j] += q_new[i] * w[i];
-        }
-        for (int i = 0; i < n; ++i) {
-            w[i] -= alpha[j] * q_new[i];
+        alpha[j] = std::inner_product(q_new.begin(), q_new.end(), w.begin(), 0.0);
+        for (int i = 0; i < n; ++i) w[i] -= alpha[j] * q_new[i];
+
+        beta[j] = std::sqrt(std::inner_product(w.begin(), w.end(), w.begin(), 0.0));
+        if (beta[j] < 1e-12 || std::isnan(beta[j])) {
+            valid_k = j + 1;
+            break;
         }
 
-        beta[j] = 0.0;
         for (int i = 0; i < n; ++i) {
-            beta[j] += w[i] * w[i];
+            q_old[i] = q_new[i];
+            q_new[i] = w[i] / beta[j];
         }
-        beta[j] = std::sqrt(beta[j]);
-
-        if (j < k-1 && beta[j] > 1e-12) {
-            for (int i = 0; i < n; ++i) {
-                q_old[i] = q_new[i];
-                q_new[i] = w[i] / beta[j];
-            }
-        }
+        valid_k = j + 1;
     }
 
-    for (int i = 0; i < k; ++i) {
+    for (int i = 0; i < valid_k; ++i) {
         T.set(i, i, alpha[i]);
-        if (i < k-1) {
-            T.set(i, i+1, beta[i]);
-            T.set(i+1, i, beta[i]);
+        if (i < valid_k - 1) {
+            T.set(i, i + 1, beta[i]);
+            T.set(i + 1, i, beta[i]);
         }
     }
 
-    std::vector<double> eigenvalues(k);
-    COO current_T = static_cast<const COO&>(T);
-    COO Qmat({}, {}, {}, k, k);
-    COO Rmat({}, {}, {}, k, k);
-
-    for (int iter = 0; iter < 50; ++iter) {
-        Decomposition::QR(current_T, Qmat, Rmat);
-        COO new_T({}, {}, {}, k, k);
-        for (int i = 0; i < k; ++i)
-            for (int j = 0; j < k; ++j)
-                for (int l = 0; l < k; ++l)
-                    new_T.set(i, j, new_T.get(i, j) + Rmat.get(i, l) * Qmat.get(l, j));
-        current_T = new_T;
-    }
-
-    for (int i = 0; i < k; ++i) eigenvalues[i] = current_T.get(i, i);
-    return eigenvalues;
+    return QRIteration(T, max_iters, 1e-10);
 }
 
-
-std::vector<double> EigenSolver::arnoldi(const BaseMatrix& A, int k, BaseMatrix& H, BaseMatrix& Q) {
+std::vector<double> EigenSolver::arnoldi(const BaseMatrix& A, int k, BaseMatrix& H, BaseMatrix& Q, int max_iters) {
     int n = A.getRows();
-    assert(A.getRows() == A.getCols() && "Arnoldi requires square matrix.");
+    assert(A.getRows() == A.getCols());
 
     std::vector<std::vector<double>> q_vectors(k + 1, std::vector<double>(n, 0.0));
     std::mt19937 gen(888);
     std::uniform_real_distribution<> dis(0.0, 1.0);
-
     for (int i = 0; i < n; ++i) q_vectors[0][i] = dis(gen);
-    double norm = 0.0;
-    for (double val : q_vectors[0]) norm += val * val;
-    norm = std::sqrt(norm);
+    double norm = std::sqrt(std::inner_product(q_vectors[0].begin(), q_vectors[0].end(), q_vectors[0].begin(), 0.0));
     for (double& val : q_vectors[0]) val /= norm;
 
+    int valid_k = 0;
     for (int j = 0; j < k; ++j) {
-        std::vector<double> w = sparse_matvec_product(A, q_vectors[j]);
+        std::vector<double> w = A.multiply(q_vectors[j]);
 
         for (int i = 0; i <= j; ++i) {
-            double hij = 0.0;
-            for (int l = 0; l < n; ++l) hij += q_vectors[i][l] * w[l];
+            double hij = std::inner_product(q_vectors[i].begin(), q_vectors[i].end(), w.begin(), 0.0);
             H.set(i, j, hij);
             for (int l = 0; l < n; ++l) w[l] -= hij * q_vectors[i][l];
         }
 
-        double h_next = 0.0;
-        for (double val : w) h_next += val * val;
-        h_next = std::sqrt(h_next);
-
-        if (h_next < 1e-12) break; 
+        double h_next = std::sqrt(std::inner_product(w.begin(), w.end(), w.begin(), 0.0));
+        
+        if (h_next < 1e-12 || std::isnan(h_next)) {
+            valid_k = j + 1;
+            break;
+        }
 
         if (j + 1 < k) {
             H.set(j + 1, j, h_next);
-            for (int i = 0; i < n; ++i) q_vectors[j+1][i] = w[i] / h_next;
+            for (int i = 0; i < n; ++i) q_vectors[j + 1][i] = w[i] / h_next;
         }
+        valid_k = j + 1;
     }
 
-
-    for (int j = 0; j < k; ++j)
-        for (int i = 0; i < n; ++i)
-            Q.set(i, j, q_vectors[j][i]);
-
-    std::vector<double> eigenvalues(k);
-    COO current_H = static_cast<const COO&>(H);
-    COO Qmat({}, {}, {}, k, k);
-    COO Rmat({}, {}, {}, k, k);
-
-    for (int iter = 0; iter < 50; ++iter) {
-        Decomposition::QR(current_H, Qmat, Rmat);
-        COO new_H({}, {}, {}, k, k);
-        for (int i = 0; i < k; ++i)
-            for (int j = 0; j < k; ++j)
-                for (int l = 0; l < k; ++l)
-                    new_H.set(i, j, new_H.get(i, j) + Rmat.get(i, l) * Qmat.get(l, j));
-        current_H = new_H;
-    }
-
-    for (int i = 0; i < k; ++i) eigenvalues[i] = current_H.get(i, i);
-    return eigenvalues;
+    return QRIteration(H, max_iters, 1e-10);
 }
+
+

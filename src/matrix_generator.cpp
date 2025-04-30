@@ -112,31 +112,28 @@ BaseMatrix* MatrixGenerator::generate_matrix(const std::string& format, int m, i
 } 
 
 BaseMatrix* MatrixGenerator::generate_spd_matrix(int n) {
-    std::vector<std::vector<double>> A(n, std::vector<double>(n, 0.0));
-
     std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution_val(0.1, 1.0);
-
-    for (int i = 0; i < n; ++i)
-        for (int j = 0; j < n; ++j)
-            A[i][j] = distribution_val(generator);
-
-    std::vector<std::vector<double>> ATA(n, std::vector<double>(n, 0.0));
-    for (int i = 0; i < n; ++i)
-        for (int j = 0; j < n; ++j)
-            for (int k = 0; k < n; ++k)
-                ATA[i][j] += A[k][i] * A[k][j];
 
     std::vector<int> row_idx, col_idx;
     std::vector<double> values;
 
     for (int i = 0; i < n; ++i)
-        for (int j = 0; j < n; ++j)
-            if (ATA[i][j] != 0.0) {
-                row_idx.push_back(i);
-                col_idx.push_back(j);
-                values.push_back(ATA[i][j]);
-            }
+        for (int j = 0; j < n; ++j) {
+            double val = distribution_val(generator);
+            row_idx.push_back(i);
+            col_idx.push_back(j);
+            values.push_back(val);
+        }
 
-    return new COO(row_idx, col_idx, values, n, n);
+    COO* A = new COO(row_idx, col_idx, values, n, n);
+
+    BaseMatrix* A_T = A->transpose();             
+    BaseMatrix* A_TA = A_T->multiply(*A);          
+
+
+    delete A;
+    delete A_T;
+
+    return A_TA;  
 }

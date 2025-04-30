@@ -5,6 +5,21 @@ COO::COO(const std::string& filename) {
     std::string line;
 }
 
+COO::COO(const BaseMatrix& A) {
+    m = A.getRows();
+    n = A.getCols();
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            double val = A.get(i, j);
+            if (std::abs(val) > 1e-12) {
+                row_idx.push_back(i);
+                col_idx.push_back(j);
+                values.push_back(val);
+            }
+        }
+    }
+}
+
 COO::~COO() {
 }
 

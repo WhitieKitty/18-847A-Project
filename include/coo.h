@@ -11,6 +11,7 @@ class COO : public BaseMatrix {
     public:
         COO(const std::string& filename);
         COO(const std::vector<int>& row_idx, const std::vector<int>& col_idx, const std::vector<double>& values, int m, int n);
+        COO(const BaseMatrix& A);
         ~COO();
         void print() const;
         void show_matrix() const;
