@@ -1,5 +1,10 @@
+BUILD ?= release
 CXX      = clang++
-CXXFLAGS = -std=c++11 -Wall -Wextra -I./include -DACCELERATE_NEW_LAPACK
+ifeq ($(BUILD),debug)
+    CXXFLAGS = -std=c++11 -Wall -Wextra -g -I./include -DACCELERATE_NEW_LAPACK
+else
+    CXXFLAGS = -std=c++11 -Wall -Wextra -O3 -I./include -DACCELERATE_NEW_LAPACK
+endif
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Darwin)

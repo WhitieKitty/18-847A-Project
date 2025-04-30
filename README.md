@@ -7,13 +7,17 @@
 
 ## Build Instructions
 
-To run the unit tests, which include basic functionality tests for the matrix library and matrix decompositions, use:
+To run the tests, which include basic functionality tests for the matrix library and matrix decompositions, use:
 
 ```bash
 make test
 ```
-To test SVD functionality:
+This will by default build the project in `release` mode, which is optimized for performance. If you want to build in `debug` mode, use:
+```bash
+make test BUILD=debug
+```
 
+To test SVD functionality specifically, use:
 ```bash
 make test_svd
 ```
