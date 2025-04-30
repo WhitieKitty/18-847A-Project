@@ -39,7 +39,7 @@ int main() {
     // ----------------------
     // Part 2: Generate a symmetric positive definite (SPD) matrix
     // ----------------------
-    int matrix_size = 500; 
+    int matrix_size = 30; 
     BaseMatrix* matrix = mg.generate_spd_matrix(matrix_size);
 
     std::cout << "\n[Generated SPD Matrix for EigenSolver Testing]" << std::endl;
@@ -179,8 +179,8 @@ int main() {
     std::cout << "Frobenius Norm: " << fb_norm << std::endl;
 
     std::cout << "LU Decomposition Time: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << " ms" << std::endl;
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+              << " ns" << std::endl;
 
     delete lu_matrix;
     delete L;
@@ -212,8 +212,8 @@ int main() {
 
 
     std::cout << "QR Decomposition Time: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << " ms" << std::endl;
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+              << " ns" << std::endl;
 
     delete qr_matrix;
     delete Q_mat;
@@ -242,8 +242,8 @@ int main() {
     std::cout << "Frobenius Norm: " << frobenius_norm_chol << std::endl;
 
     std::cout << "Cholesky Decomposition Time: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << " ms" << std::endl;
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+              << " ns" << std::endl;
 
     delete cholesky_matrix;
     delete chol_L;

@@ -3,7 +3,15 @@
 #include "base_matrix.h"
 #include "coo.h"
 #include "matrix_generator.h"
-#include <Accelerate/Accelerate.h>
+
+#ifdef __APPLE__
+  #include <Accelerate/Accelerate.h>
+#else
+  extern "C" {
+    #include <cblas.h>
+    #include <lapacke.h>
+  }
+#endif
 
 int main() {
     std::cout << "=============================" << std::endl;
@@ -24,22 +32,56 @@ int main() {
             ori_matrx.push_back(matrix->get(i, j));
         }
     }
+
+    int m = matrix->getRows(), n = matrix->getCols(), lda = matrix->getCols();
+    int ldu = m, ldvt = n;
+    std::vector<double> s(std::min(m, n));
+    std::vector<double> u(ldu * m);
+    std::vector<double> vt(ldvt * n);
+
     int info;
-    int m = matrix->getRows(), n = matrix->getCols(), lda = matrix->getRows();
-    int ldu = matrix->getRows(), ldvt = matrix->getCols();
-    double s[n], u[ldu*m], vt[ldvt*n];
+
+#ifdef __APPLE__
     int lwork = -1;
     double wkopt;
     double* work;
-    dgesvd_( "All", "All", &m, &n, ori_matrx.data(), &lda, s, u, &ldu, vt, &ldvt, &wkopt, &lwork, &info );  
+
+    // Workspace query
+    dgesvd_("All", "All", &m, &n,
+            ori_matrx.data(), &lda,
+            s.data(), u.data(), &ldu,
+            vt.data(), &ldvt,
+            &wkopt, &lwork, &info);
     lwork = (int)wkopt;
-    work = (double*)malloc( lwork*sizeof(double) );
-    dgesvd_( "All", "All", &m, &n, ori_matrx.data(), &lda, s, u, &ldu, vt, &ldvt, work, &lwork, &info );
-    std::cout << "S:";
-    for (int i = 0; i < n; i++) {
-        std::cout << s[i] << " ";
+    work = (double*)malloc(lwork * sizeof(double));
+
+    // Actual computation
+    dgesvd_("All", "All", &m, &n,
+            ori_matrx.data(), &lda,
+            s.data(), u.data(), &ldu,
+            vt.data(), &ldvt,
+            work, &lwork,
+            &info);
+
+    free(work);
+#else
+    std::vector<double> superb(std::min(m, n) - 1);
+    info = LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A',
+                          m, n, ori_matrx.data(), n,
+                          s.data(), u.data(), ldu,
+                          vt.data(), ldvt, superb.data());
+#endif
+
+    if (info != 0) {
+        std::cerr << "SVD failed, info = " << info << std::endl;
+    } else {
+        std::cout << "S: ";
+        for (auto val : s) {
+            std::cout << val << " ";
+        }
+        std::cout << std::endl;
+        std::cout << "Largest singular value: " << s[0] << std::endl;
     }
-    std::cout << std::endl;
-    std::cout << "Largest singular value: " << s[0] << std::endl;
+
     delete matrix;
 }

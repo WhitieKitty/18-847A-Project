@@ -1,6 +1,13 @@
 CXX      = clang++
 CXXFLAGS = -std=c++11 -Wall -Wextra -I./include -DACCELERATE_NEW_LAPACK
-LDFLAGS  = -framework Accelerate
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+  LDFLAGS = -framework Accelerate
+else
+  LDFLAGS = -llapacke -llapack -lblas -lm
+endif
+
 
 SRC_DIR    = src
 OBJ_DIR    = obj
