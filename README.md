@@ -1,11 +1,12 @@
 # 18-847A-Project
+
+## Team Members
+- Xiaobai Jiang (`xiaobaij`)
+- Yuwei An (`yuweia`)
+- Shuting Zhang (`shuting2`)
+
 ## Build Instructions
 
-To build the project, simply run:
-
-```bash
-make
-```
 To run the unit tests, which include basic functionality tests for the matrix library and matrix decompositions, use:
 
 ```bash
