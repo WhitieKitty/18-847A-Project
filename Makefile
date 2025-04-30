@@ -24,6 +24,9 @@ TARGET         = $(BIN_DIR)/sparse_matrix
 TEST_TARGET    = $(BIN_DIR)/test
 TEST_SVD_TARGET= $(BIN_DIR)/test_svd
 
+DOXYGEN_CONF = Doxyfile
+DOXYGEN_OUT  = docs/html
+
 .PHONY: all clean directories test test_svd
 
 all: directories $(TARGET)
@@ -51,3 +54,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+# Doxygen build target
+doc:
+	doxygen $(DOXYGEN_CONF)
