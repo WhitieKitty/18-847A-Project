@@ -70,10 +70,10 @@ std::pair<double, std::vector<double>> EigenSolver::inverseIteration(const BaseM
     int n = A.getRows();
 
     // Step 1: initialize a random vector b_0
-    std::vector<double> b_k(n);
-    std::mt19937 gen(123); // random generator with fixed seed
-    std::uniform_real_distribution<> dis(0.0, 1.0); // uniform [0, 1]
-    for (int i = 0; i < n; ++i) b_k[i] = dis(gen);
+    std::vector<double> b_k(n); // b_k is the vector for current iteration
+    std::mt19937 gen(123); // random number generator with fixed seed for reproducibility
+    std::uniform_real_distribution<> dis(0.0, 1.0); // uniform distribution in [0, 1]
+    for (int i = 0; i < n; ++i) b_k[i] = dis(gen); // fill b_k with random values
 
     // Step 2: LU decomposition A = LU
     BaseMatrix* L = new COO({}, {}, {}, n, n);
@@ -210,7 +210,7 @@ std::vector<double> EigenSolver::lanczos(const BaseMatrix& A, int k, BaseMatrix&
     std::vector<double> beta(k, 0.0);  // off-diagonal entries β_j
 
     // Step 1: Initialize q₀ to a random normalized vector
-    std::mt19937 gen(777); // Initialize a Mersenne Twister random number generator with fixed seed for reproducibility
+    std::mt19937 gen(777); // random number generator with fixed seed for reproducibility
     std::uniform_real_distribution<> dis(0.0, 1.0); // Uniform distribution in range [0, 1] to fill vector with random values
 
     // Generate initial random vector q_new with values in [0,1]
@@ -297,7 +297,7 @@ std::vector<double> EigenSolver::arnoldi(const BaseMatrix& A, int k, BaseMatrix&
     std::vector<std::vector<double>> q_vectors(k + 1, std::vector<double>(n, 0.0));
 
     // Step 2: Initialize q₀ with random unit norm vector
-    std::mt19937 gen(888); // random generator
+    std::mt19937 gen(888); // random number generator with fixed seed for reproducibility
     std::uniform_real_distribution<> dis(0.0, 1.0); // uniform distribution [0,1]
     for (int i = 0; i < n; ++i) q_vectors[0][i] = dis(gen);
     double norm = std::sqrt(std::inner_product(q_vectors[0].begin(), q_vectors[0].end(), q_vectors[0].begin(), 0.0));
