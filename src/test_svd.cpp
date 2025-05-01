@@ -35,11 +35,11 @@ int main() {
     lwork = (int)wkopt;
     work = (double*)malloc( lwork*sizeof(double) );
     dgesvd_( "All", "All", &m, &n, ori_matrx.data(), &lda, s, u, &ldu, vt, &ldvt, work, &lwork, &info );
-    std::cout << "S:";
-    for (int i = 0; i < n; i++) {
-        std::cout << s[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "S:";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << s[i] << " ";
+    // }
+    // std::cout << std::endl;
     std::cout << "Largest singular value: " << s[0] << std::endl;
     delete matrix;
 }

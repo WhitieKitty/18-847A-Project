@@ -89,10 +89,10 @@ double SVD::lanczos_bidiag(const BaseMatrix& A, int k) {
     }
 
     delete AT;
-    std::cout << "S:" << std::endl;
-    for (int i = 0; i < mn; i++) {
-        std::cout << s[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "S:" << std::endl;
+    // for (int i = 0; i < mn; i++) {
+    //     std::cout << s[i] << " ";
+    // }
+    // std::cout << std::endl;
     return s[0];
 }
