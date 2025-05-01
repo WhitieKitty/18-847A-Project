@@ -1,39 +1,76 @@
-# 18-847A-Project
+# Sparse Matrix Library
 
-## Team Members
-- Xiaobai Jiang (`xiaobaij`)
-- Yuwei An (`yuweia`)
-- Shuting Zhang (`shuting2`)
+A C++ library for handling sparse matrices with various storage formats and operations, including matrix decomposition and eigenvalue computation.
 
-## Build Instructions
+## Features
 
-To run the tests, which include basic functionality tests for the matrix library and matrix decompositions, use:
+- Multiple sparse matrix storage formats:
+  - COO (Coordinate Format)
+  - CSR (Compressed Sparse Row)
+  - CSC (Compressed Sparse Column)
+- Matrix operations and decompositions:
+  - Singular Value Decomposition (SVD)
+  - Eigenvalue computation
+  - Matrix decomposition utilities
+- Matrix generation utilities
+- Comprehensive test suite
 
+## Prerequisites
+
+- C++11 compatible compiler (clang++ recommended)
+- LAPACK and BLAS libraries
+  - On macOS: Accelerate framework
+  - On Linux: liblapacke, liblapack, and libblas
+
+## Building the Project
+
+The project uses a Makefile-based build system. You can build the project in either debug or release mode.
+
+### Debug Build
+```bash
+make BUILD=debug
+```
+
+### Release Build
+```bash
+make
+```
+
+### Running Tests
 ```bash
 make test
-```
-This will by default build the project in `release` mode, which is optimized for performance. If you want to build in `debug` mode, use:
-```bash
-make test BUILD=debug
-```
-
-To test SVD functionality specifically, use:
-```bash
 make test_svd
 ```
 
-## Dependencies
-This project requires the following dependencies:
-- C++11
-- BLAS/LAPACK for Linux or WSL (`libblas` and `liblapacke`)
-- Doxygen (for documentation generation)
+### Documentation
+To generate documentation using Doxygen:
+```bash
+make doc
+```
 
-## Example Usage
+## Project Structure
 
-Example input/output tests are included in the `test` and `test_svd` targets. Their outpus demonstrate:
-- Sparse matrix input and storage
-- Eigenvalue and eigenvector computation
-- SVD computation
-- Matrix decomposition (QR, LU, Cholesky)
+- `include/` - Header files
+- `src/` - Source files
+- `bin/` - Compiled binaries
+- `obj/` - Object files
+- `docs/` - Generated documentation
 
-See `report.pdf` for a detailed explanation of the results.
+## Key Components
+
+- `base_matrix.h/cpp` - Base class for sparse matrices
+- `coo.h/cpp` - Coordinate format implementation
+- `csr.h/cpp` - Compressed Sparse Row implementation
+- `csc.h/cpp` - Compressed Sparse Column implementation
+- `svd.h/cpp` - Singular Value Decomposition implementation
+- `EigenSolver.h/cpp` - Eigenvalue computation
+- `Decomposition.h/cpp` - Matrix decomposition utilities
+- `matrix_generator.h/cpp` - Matrix generation utilities
+
+## License
+
+[Add your license information here]
+
+## Contributing
+
+[Add contribution guidelines here]

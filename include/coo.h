@@ -31,9 +31,9 @@ class COO : public BaseMatrix {
         void set(int i, int j, double value);
         double get(int i, int j) const;
     private:
-        std::vector<int> row_idx;
-        std::vector<int> col_idx;
-        std::vector<double> values;
+        std::vector<int> row_idx;    // Array of row indices for non-zero elements
+        std::vector<int> col_idx;    // Array of column indices for non-zero elements
+        std::vector<double> values;  // Array of non-zero values
         int m; // number of rows
         int n; // number of columns
 };  

@@ -30,9 +30,9 @@ class CSR : public BaseMatrix {
         void set(int i, int j, double value);
         double get(int i, int j) const;
     private:
-        std::vector<int> row_ptr;
-        std::vector<int> col_idx;
-        std::vector<double> values;
+        std::vector<int> row_ptr;    // Array of row pointers (start index of each row)
+        std::vector<int> col_idx;    // Array of column indices for non-zero elements
+        std::vector<double> values;  // Array of non-zero values
         int m; // number of rows
         int n; // number of columns
 };

@@ -13,7 +13,6 @@ else
   LDFLAGS = -llapacke -llapack -lblas -lm
 endif
 
-
 SRC_DIR    = src
 OBJ_DIR    = obj
 BIN_DIR    = bin
