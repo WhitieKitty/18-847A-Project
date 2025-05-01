@@ -7,7 +7,15 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
-#include <Accelerate/Accelerate.h>
+
+#ifdef __APPLE__
+  #include <Accelerate/Accelerate.h>
+#else
+  extern "C" {
+    #include <cblas.h>
+    #include <lapacke.h>
+  }
+#endif
 
 double SVD::lanczos_bidiag(const BaseMatrix& A, int k) {
     std::vector<std::vector<double>> V(k+1, std::vector<double>(A.getCols()));
@@ -48,51 +56,67 @@ double SVD::lanczos_bidiag(const BaseMatrix& A, int k) {
             V[i+1][j] = z[j] / beta[i+1];
     }
 
-    int m = k, n = k+1, lda = m;
+    int m = k, n = k + 1, lda = n;
     int ldu = m, ldvt = n;
     std::vector<double> B(m * n, 0.0);
     for (int i = 0; i < k; ++i) {
-        B[i*n + i] = alpha[i];
-        B[i*n + i + 1] = beta[i+1];
+        B[i * n + i] = alpha[i];
+        B[i * n + i + 1] = beta[i + 1];
     }
 
-    // std::cout << "B:" << std::endl; 
-    // for (int i = 0; i < m; i++) {
-    //     for (int j = 0; j < n; j++) {
-    //         std::cout << B[i*n + j] << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
+    std::vector<double> s(std::min(m, n));
+    std::vector<double> u(ldu * m);
+    std::vector<double> vt(ldvt * n);
 
     int info;
-    int mn = std::min(m,n), mx = std::max(m,n);
+
+#ifdef __APPLE__
     int lwork = -1;
     double wkopt;
     double* work;
-    double s[n], u[ldu*m], vt[ldvt*n];
-    dgesvd_( "All", "All", &m, &n, B.data(), &lda, s, u, &ldu, vt, &ldvt, &wkopt, &lwork, &info );
-    lwork = (int)wkopt;
-    work = (double*)malloc( lwork*sizeof(double) );
 
-    dgesvd_(
-      "All", "All", &m, &n,
-      B.data(), &lda,
-      s, u, &ldu,
-      vt, &ldvt,
-      work, &lwork,
-      &info
+    dgesvd_("All", "All", &m, &n,
+            B.data(), &lda,
+            s.data(), u.data(), &ldu,
+            vt.data(), &ldvt,
+            &wkopt, &lwork,
+            &info);
+
+    lwork = (int)wkopt;
+    work = (double*)malloc(lwork * sizeof(double));
+
+    dgesvd_("All", "All", &m, &n,
+            B.data(), &lda,
+            s.data(), u.data(), &ldu,
+            vt.data(), &ldvt,
+            work, &lwork,
+            &info);
+
+    free(work);
+#else
+    std::vector<double> superb(std::min(m, n) - 1);
+    info = LAPACKE_dgesvd(
+        LAPACK_ROW_MAJOR, 'A', 'A',
+        m, n,
+        B.data(), lda,
+        s.data(), u.data(), ldu, vt.data(), ldvt,
+        superb.data()
     );
+#endif
+
     if (info != 0) {
-        std::cerr << "dgesvd_ failed, info=" << info << "\n";
+        std::cerr << "SVD computation failed, info = " << info << std::endl;
         delete AT;
         return -1;
     }
 
     delete AT;
-    // std::cout << "S:" << std::endl;
-    // for (int i = 0; i < mn; i++) {
-    //     std::cout << s[i] << " ";
-    // }
-    // std::cout << std::endl;
+
+    std::cout << "S:" << std::endl;
+    for (int i = 0; i < (int)s.size(); i++) {
+        std::cout << s[i] << " ";
+    }
+    std::cout << std::endl;
+
     return s[0];
 }

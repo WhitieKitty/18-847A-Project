@@ -6,6 +6,13 @@
 #include <iostream>
 #include "base_matrix.h"
 
+/**
+ * @class CSR
+ * @brief Class representing a sparse matrix in Compressed Sparse Row (CSR) format.
+ * 
+ * Stores nonzero values row by row, with arrays for values, column indices, and row start offsets. 
+ * It's efficient for row slicing and matrix-vector multiplication.
+ */
 class CSR : public BaseMatrix {
     public:
         CSR(const std::string& filename);

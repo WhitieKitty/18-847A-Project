@@ -1,6 +1,18 @@
+BUILD ?= release
 CXX      = clang++
-CXXFLAGS = -std=c++11 -Wall -Wextra -I./include -DACCELERATE_NEW_LAPACK
-LDFLAGS  = -framework Accelerate
+ifeq ($(BUILD),debug)
+    CXXFLAGS = -std=c++11 -Wall -Wextra -g -I./include -DACCELERATE_NEW_LAPACK
+else
+    CXXFLAGS = -std=c++11 -Wall -Wextra -O3 -I./include -DACCELERATE_NEW_LAPACK
+endif
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+  LDFLAGS = -framework Accelerate
+else
+  LDFLAGS = -llapacke -llapack -lblas -lm
+endif
+
 
 SRC_DIR    = src
 OBJ_DIR    = obj
@@ -16,6 +28,9 @@ LIB_OBJS    = $(filter-out $(TEST_OBJ) $(TEST_SVD_OBJ),$(patsubst $(SRC_DIR)/%.c
 TARGET         = $(BIN_DIR)/sparse_matrix
 TEST_TARGET    = $(BIN_DIR)/test
 TEST_SVD_TARGET= $(BIN_DIR)/test_svd
+
+DOXYGEN_CONF = Doxyfile
+DOXYGEN_OUT  = docs/html
 
 .PHONY: all clean directories test test_svd
 
@@ -44,3 +59,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+# Doxygen build target
+doc:
+	doxygen $(DOXYGEN_CONF)

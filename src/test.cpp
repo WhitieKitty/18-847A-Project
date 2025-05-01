@@ -39,8 +39,10 @@ int main() {
     // ----------------------
     // Part 2: Generate a symmetric positive definite (SPD) matrix
     // ----------------------
-    int matrix_size = 500; 
-    BaseMatrix* matrix = mg.generate_spd_matrix(matrix_size);
+    int matrix_size = 50; 
+    int max_iter = 50;
+    int num_eigenvalues=10;
+    BaseMatrix* matrix = mg.generate_spd_matrix("COO", matrix_size);
 
     std::cout << "\n[Generated SPD Matrix for EigenSolver Testing]" << std::endl;
     //matrix->print();
@@ -51,7 +53,7 @@ int main() {
     // ----------------------
     std::cout << "\n[Testing Power Iteration]" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    std::pair<double, std::vector<double>> result = EigenSolver::powerIteration(*matrix);
+    std::pair<double, std::vector<double>> result = EigenSolver::powerIteration(*matrix,max_iter,1e-10);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "Estimated dominant eigenvalue (Power Iteration): " << result.first << std::endl;
     std::cout << "Time taken: " 
@@ -63,7 +65,7 @@ int main() {
     // ----------------------
     std::cout << "\n[Testing Inverse Iteration]" << std::endl;
     start = std::chrono::high_resolution_clock::now();
-    std::pair<double, std::vector<double>> inv_result = EigenSolver::inverseIteration(*matrix);
+    std::pair<double, std::vector<double>> inv_result = EigenSolver::inverseIteration(*matrix,max_iter,1e-10);
     end = std::chrono::high_resolution_clock::now();
     std::cout << "Estimated smallest eigenvalue (Inverse Iteration): " << inv_result.first << std::endl;
     std::cout << "Time taken: "
@@ -72,21 +74,21 @@ int main() {
 
 
     // ----------------------
-    // Test Dense QR Iteration
+    // Test QR Iteration
     // ----------------------
-    std::cout << "\n[Testing Dense QR Iteration]" << std::endl;
+    std::cout << "\n[Testing QR Iteration]" << std::endl;
     start = std::chrono::high_resolution_clock::now();
-    std::vector<double> dense_eigenvalues = EigenSolver::denseQR(*matrix, matrix_size, 50);
+    std::vector<double> qr_eigenvalues = EigenSolver::QRIteration(*matrix, max_iter, 1e-10);
     end = std::chrono::high_resolution_clock::now();
-    std::cout << "[Dense QR finished]" << std::endl;
+    std::cout << "[QR finished]" << std::endl;
     std::cout << "Time taken: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
             << " ms" << std::endl;
 
-    std::cout << "[Dense QR eigenvalues (first 10)]" << std::endl;
-    int print_count = std::min(10, (int)dense_eigenvalues.size());
+    std::cout << "[QR eigenvalues (first 10)]" << std::endl;
+    int print_count = std::min(10, (int)qr_eigenvalues.size());
     for (int i = 0; i < print_count; ++i) {
-        std::cout << dense_eigenvalues[i] << " ";
+        std::cout << qr_eigenvalues[i] << " ";
     }
     std::cout << std::endl;
 
@@ -97,12 +99,12 @@ int main() {
     // ----------------------
     std::vector<int> empty_row, empty_col;
     std::vector<double> empty_values;
-    COO T(empty_row, empty_col, empty_values, matrix_size, matrix_size);
-    COO Q(empty_row, empty_col, empty_values, matrix_size, matrix_size);
+    COO T(empty_row, empty_col, empty_values, num_eigenvalues, num_eigenvalues);
+    COO Q(empty_row, empty_col, empty_values, num_eigenvalues, num_eigenvalues);
 
     std::cout << "\n[Testing Lanczos Iteration]" << std::endl;
     start = std::chrono::high_resolution_clock::now();
-    std::vector<double> lanczos_eigenvalues = EigenSolver::lanczos(*matrix, matrix_size, T, Q);
+    std::vector<double> lanczos_eigenvalues = EigenSolver::lanczos(*matrix, num_eigenvalues, T, Q,max_iter);
     end = std::chrono::high_resolution_clock::now();
     std::cout << "[Lanczos finished]" << std::endl;
     std::cout << "Time taken: "
@@ -121,12 +123,12 @@ int main() {
     // ----------------------
     // Test Arnoldi Iteration
     // ----------------------
-    COO H(empty_row, empty_col, empty_values, matrix_size, matrix_size);
-    COO Q2(empty_row, empty_col, empty_values, matrix_size, matrix_size);
+    COO H(empty_row, empty_col, empty_values, num_eigenvalues, num_eigenvalues);
+    COO Q2(empty_row, empty_col, empty_values, num_eigenvalues, num_eigenvalues);
 
     std::cout << "\n[Testing Arnoldi Iteration]" << std::endl;
     start = std::chrono::high_resolution_clock::now();
-    std::vector<double> arnoldi_eigenvalues = EigenSolver::arnoldi(*matrix, matrix_size, H, Q2);
+    std::vector<double> arnoldi_eigenvalues = EigenSolver::arnoldi(*matrix, num_eigenvalues, H, Q2,max_iter);
     end = std::chrono::high_resolution_clock::now();
     std::cout << "[Arnoldi finished]" << std::endl;
     std::cout << "Time taken: "
@@ -153,7 +155,7 @@ int main() {
     // ----------------------
     std::cout << "\n[Generated Random Sparse Matrix in COO Format for LU Decomposition]" << std::endl;
     matrix_size = 10;
-    BaseMatrix* lu_matrix = mg.generate_spd_matrix(matrix_size);
+    BaseMatrix* lu_matrix = mg.generate_spd_matrix("COO", matrix_size);
     lu_matrix->print();
 
     BaseMatrix* L = mg.generate_matrix("COO", matrix_size, matrix_size, 0);  // empty matrix for L
@@ -179,8 +181,8 @@ int main() {
     std::cout << "Frobenius Norm: " << fb_norm << std::endl;
 
     std::cout << "LU Decomposition Time: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << " ms" << std::endl;
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+              << " ns" << std::endl;
 
     delete lu_matrix;
     delete L;
@@ -190,11 +192,11 @@ int main() {
     // Test QR Decomposition
     // ----------------------
     std::cout << "\n[Generated Random Sparse Matrix in CSR Format for QR Decomposition]" << std::endl;
-    BaseMatrix* qr_matrix = mg.generate_spd_matrix(matrix_size);
+    BaseMatrix* qr_matrix = mg.generate_spd_matrix("CSR", matrix_size);
     qr_matrix->print();
 
-    BaseMatrix* Q_mat = mg.generate_matrix("COO", matrix_size, matrix_size, 0);  // empty matrix for Q
-    BaseMatrix* R = mg.generate_matrix("COO", matrix_size, matrix_size, 0);  // empty matrix for R
+    BaseMatrix* Q_mat = mg.generate_matrix("CSR", matrix_size, matrix_size, 0);  // empty matrix for Q
+    BaseMatrix* R = mg.generate_matrix("CSR", matrix_size, matrix_size, 0);  // empty matrix for R
 
     start = std::chrono::high_resolution_clock::now();
     Decomposition::QR(*qr_matrix, *Q_mat, *R);
@@ -212,8 +214,8 @@ int main() {
 
 
     std::cout << "QR Decomposition Time: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << " ms" << std::endl;
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+              << " ns" << std::endl;
 
     delete qr_matrix;
     delete Q_mat;
@@ -223,10 +225,10 @@ int main() {
     // Test Cholesky Decomposition
     // ----------------------
     std::cout << "\n[Generated Random Sparse Matrix in CSC Format for Cholesky Decomposition]" << std::endl;
-    BaseMatrix* cholesky_matrix = mg.generate_spd_matrix(matrix_size);
+    BaseMatrix* cholesky_matrix = mg.generate_spd_matrix("CSC", matrix_size);
     cholesky_matrix->print();
 
-    BaseMatrix* chol_L = mg.generate_matrix("COO", matrix_size, matrix_size, 0);  // empty matrix for L
+    BaseMatrix* chol_L = mg.generate_matrix("CSC", matrix_size, matrix_size, 0);  // empty matrix for L
 
     start = std::chrono::high_resolution_clock::now();
     Decomposition::Cholesky(*cholesky_matrix, *chol_L);
@@ -242,8 +244,8 @@ int main() {
     std::cout << "Frobenius Norm: " << frobenius_norm_chol << std::endl;
 
     std::cout << "Cholesky Decomposition Time: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << " ms" << std::endl;
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+              << " ns" << std::endl;
 
     delete cholesky_matrix;
     delete chol_L;

@@ -8,7 +8,13 @@
 #include <vector>
 #include <string>
 
-
+/**
+ * @class CSC
+ * @brief Class representing a sparse matrix in Compressed Sparse Column (CSC) format.
+ * 
+ * Stores nonzero values column by column, with arrays for values, row indices, and column pointers.
+ * It's efficient for column slicing and matrix-vector multiplication.
+ */
 class CSC : public BaseMatrix {
     public:
         CSC(const std::string& filename);
