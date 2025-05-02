@@ -7,7 +7,7 @@
 
 ## Build Instructions
 
-To run the tests, which include basic functionality tests for the matrix library and matrix decompositions, use:
+To run the tests, which include basic functionality tests for the matrix library,eigen value solver and matrix decompositions, use:
 
 ```bash
 make test
