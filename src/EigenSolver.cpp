@@ -80,7 +80,7 @@ std::pair<double, std::vector<double>> EigenSolver::inverseIteration(const BaseM
     BaseMatrix* U = new COO({}, {}, {}, n, n);
     Decomposition::LU(A, *L, *U);
 
-    // Step 3: inverse iteration
+    // Step 3: inverse iteration,iterate b_{k+1} = A^{-1} b_k, then normalize and check convergence
     for (int iter = 0; iter < maxIters; ++iter) 
     {
         // Solve the linear system LU x = b_k, which approximates x ≈ A^{-1} b_k
@@ -105,13 +105,13 @@ std::pair<double, std::vector<double>> EigenSolver::inverseIteration(const BaseM
         b_k = x;
     }
 
-    // Step 4: estimate eigenvalue using Rayleigh quotient λ ≈ (bᵗ A b) / (bᵗ b)
+    // Step 4: estimate eigenvalue using Rayleigh quotient λ ≈ (b_k^T A b_k) / (b_k^T b_k)
     std::vector<double> Ab = A.multiply(b_k); // Compute A * b_k for numerator
     double numerator = 0.0, denominator = 0.0;
     for (int i = 0; i < n; ++i) 
     {
-        numerator += b_k[i] * Ab[i];      // Dot product: b_kᵗ A b_k
-        denominator += b_k[i] * b_k[i];   // Dot product: b_kᵗ b_k (squared norm)
+        numerator += b_k[i] * Ab[i];      // Dot product: b_k^T A b_k
+        denominator += b_k[i] * b_k[i];   // Dot product: b_k^T b_k (squared norm)
     }
 
     // Final estimated eigenvalue closest to 0 (or shift)
@@ -126,7 +126,7 @@ std::pair<double, std::vector<double>> EigenSolver::inverseIteration(const BaseM
 // This method estimates all eigenvalues of a square matrix A using repeated QR decomposition.
 //
 // Steps:
-// (1) Let current matrix A₀ = A
+// (1) Let current matrix A_0 = A
 // (2) Repeat the QR iteration:
 //     - Compute QR decomposition of A_k → A_k = Q_k R_k
 //     - Update A_{k+1} = R_k Q_k
@@ -135,7 +135,7 @@ std::pair<double, std::vector<double>> EigenSolver::inverseIteration(const BaseM
 // (3) After convergence, eigenvalues are approximated by diagonal elements of A_k
 //
 // Why it works:
-// - A_k+1 = Q_kᵗ A_k Q_k is a similarity transform → preserves eigenvalues
+// - A_k+1 = Q_kT A_k Q_k is a similarity transform → preserves eigenvalues
 // - Converges to diagonal matrix for symmetric matrices
 
 
@@ -143,13 +143,13 @@ std::vector<double> EigenSolver::QRIteration(const BaseMatrix& A, int max_iters,
     int n = A.getRows();
     assert(A.getRows() == A.getCols() && "Matrix must be square.");
 
-    COO current(A); // A₀ = A
+    COO current(A); // A_0 = A
     COO Qmat({}, {}, {}, n, n); // Holds Q
     COO Rmat({}, {}, {}, n, n); // Holds R
-
+    //Repeat the QR iteration:
     for (int iter = 0; iter < max_iters; ++iter) 
     {
-        Decomposition::QR(current, Qmat, Rmat); // Step 1: QR decomposition
+        Decomposition::QR(current, Qmat, Rmat); // Step 1: QR decomposition of A_k
         BaseMatrix* mult = Rmat.multiply(Qmat); // Step 2: form A_{k+1} = R_k Q_k
         COO* new_current = dynamic_cast<COO*>(mult);
         assert(new_current != nullptr);
