@@ -6,7 +6,7 @@
 
 /**
  * @class SVD
- * @brief Provides algorithms for computing the singular value decomposition (SVD) of a matrix.
+ * @brief Provides algorithms for computing the largest singular value decomposition (SVD) of a matrix.
  */
 class SVD {
 public:

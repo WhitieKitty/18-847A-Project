@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     double largest_singular_value = SVD::lanczos_bidiag(*matrix, 3);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "Estimated Largest singular value: " << largest_singular_value << std::endl;
-    std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
+    std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0 << " ms" << std::endl;
 
     std::vector<double> ori_matrx;
     for (int i = 0; i < matrix->getRows(); i++) {
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
     work = (double*)malloc( lwork*sizeof(double) );
     dgesvd_( "All", "All", &m, &n, ori_matrx.data(), &lda, s, u, &ldu, vt, &ldvt, work, &lwork, &info );
     end = std::chrono::high_resolution_clock::now();
-    std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
+    std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0 << " ms" << std::endl;
     // std::cout << "S:";
     // for (int i = 0; i < n; i++) {
     //     std::cout << s[i] << " ";
