@@ -14,9 +14,9 @@ int main(int argc, char* argv[]) {
     int m_size, n_size, density;
     // get argv[1], argv[2], argv[3]
     if (argc != 4) {
-        m_size = 20;
-        n_size = 20;
-        density = 3;
+        m_size = 100;
+        n_size = 100;
+        density = 32;
     } else {
         m_size = atoi(argv[1]);
         n_size = atoi(argv[2]);
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     double largest_singular_value = SVD::lanczos_bidiag(*matrix, 3);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "Estimated Largest singular value: " << largest_singular_value << std::endl;
-    std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0 << " ms" << std::endl;
+    std::cout << "Estimated Time taken: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0 << " ms" << std::endl;
 
     std::vector<double> ori_matrx;
     for (int i = 0; i < matrix->getRows(); i++) {
