@@ -39,9 +39,10 @@ int main() {
     // ----------------------
     // Part 2: Generate a symmetric positive definite (SPD) matrix
     // ----------------------
-    int matrix_size = 50; 
-    int max_iter = 50;
-    int num_eigenvalues=10;
+    int matrix_size = 50; // the size of spd matrix
+    int max_iter = 50; // the maximum iterations for solving eigen values
+    int num_eigenvalues=10; // the number of eigenvalues to be calculated for Lanczos and Arnoldi 
+    
     BaseMatrix* matrix = mg.generate_spd_matrix("COO", matrix_size);
 
     std::cout << "\n[Generated SPD Matrix for EigenSolver Testing]" << std::endl;

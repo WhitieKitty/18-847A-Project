@@ -62,4 +62,5 @@ int main(int argc, char* argv[]) {
     // std::cout << std::endl;
     std::cout << "Largest singular value: " << s[0] << std::endl;
     delete matrix;
+   
 }
